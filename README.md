@@ -1,6 +1,6 @@
 #DEEP LEARNING FOR MEDICAL IMAGE CLASSIFICATION
 
-Bachelor's Thesis.
+Bachelor's Thesis. <br>
 Fall 2016.
 
 Author: Adria Romero Lopez <br>
