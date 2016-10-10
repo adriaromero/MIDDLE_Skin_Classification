@@ -3,9 +3,9 @@
 Bachelor's Thesis.
 Fall 2016.
 
-Author: Adria Romero Lopez
-Supervisor: Dr. Oge Marques (FAU Professor)
-Co-Supervisor: Dr. Xavier Giró-i-Nieto (UPC Professor)
+Author: Adria Romero Lopez <br>
+Supervisor: Dr. Oge Marques (FAU Professor) <br>
+Co-Supervisor: Dr. Xavier Giró-i-Nieto (UPC Professor)<br>
 
 #Project overview <br>
 The purpose of this project is to classify several (not defined yet) kinds of skin lesions using Deep Neural Networks (DNNs), a form of artificial intelligence, that have been shown to accurately segment and classify lesions and malignancies in medical images (Greenspan, van Ginneken, & Summers 2016). 
