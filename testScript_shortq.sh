@@ -4,6 +4,6 @@
 #SBATCH -o python_%j.out                    # File to which STDOUT will be written
 #SBATCH -e python_%j.err                    # File to which STDERR will be written
 #SBATCH --mail-type=END                     # Type of email notification- BEGIN,END,FAIL,ALL
-#SBATCH --mail-user=jburdick2015@fau.edu    # Email to which notifications will be sent
+#SBATCH --mail-user=fau.alopez@fau.edu    # Email to which notifications will be sent
 
-python testpython.py
+python test.py
