@@ -11,7 +11,7 @@ device = gpu
 # You will have to create the directories and modify according to where you
 # want to install the files.
 # Uncomment if you want to change the default path to your own.
-# base_compiledir = /local-scratch/jer/theano/
+base_compiledir = /home/fau.alopez/FAU_DL_imageClassification
 
 [nvcc]
 fastmath = True
