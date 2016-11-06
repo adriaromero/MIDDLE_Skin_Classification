@@ -4,15 +4,17 @@ from keras.preprocessing.image import ImageDataGenerator
 from keras.models import Sequential
 from keras.layers import Convolution2D, MaxPooling2D
 from keras.layers import Activation, Dropout, Flatten, Dense
+from keras import backend as K
+K.set_image_dim_ordering('th')
 
 # dimensions of our images.
 img_width, img_height = 150, 150
 
-train_data_dir = 'data/train'
-validation_data_dir = 'data/test'
+train_data_dir = '/imatge/aromero/work/image-classification/isbi-dataset/train'
+validation_data_dir = '/imatge/aromero/work/image-classification/isbi-dataset/test'
 nb_train_samples = 896
 nb_validation_samples = 313
-nb_epoch = 20
+nb_epoch = 2
 
 
 model = Sequential()
@@ -69,4 +71,4 @@ model.fit_generator(
         validation_data=validation_generator,
         nb_val_samples=nb_validation_samples)
 
-model.load_weights('first_try.h5')
+model.save_weights('first_try.h5')
