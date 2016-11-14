@@ -88,4 +88,4 @@ model.fit_generator(
 print('-'*30)
 print('Saving weights...')
 print('-'*30)
-model.save_weights('weights-task1-10epochs-dogs-vs-cats-dataset.h5')
+model.save_weights('task1_dogs_vs_cats_weights_' + str(nb_epoch) + 'epochs.h5')

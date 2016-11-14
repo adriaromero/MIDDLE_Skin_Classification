@@ -7,21 +7,22 @@ from keras.preprocessing.image import ImageDataGenerator
 from keras.models import Sequential
 from keras.layers import Convolution2D, MaxPooling2D, ZeroPadding2D
 from keras.layers import Activation, Dropout, Flatten, Dense
+from keras.utils.visualize_util import plot
+import matplotlib.pyplot as plt
 from keras import backend as K
 K.set_image_dim_ordering('th')
 
 # path to the model weights file.
-weights_path = '/imatge/aromero/work/image-classification/FAU_DL_imageClassification/weigths/vgg16_weights.h5'
-top_model_weights_path = '/imatge/aromero/work/image-classification/FAU_DL_imageClassification/weigths/weights-task1-10epochs-dogs-vs-cats-dataset.h5'
+weights_path = '/imatge/aromero/work/image-classification/FAU_DL_imageClassification/weights/vgg16_weights.h5'
+top_model_weights_path = '/imatge/aromero/work/image-classification/FAU_DL_imageClassification/weights/task1_skin_weights_20epochs.h5'
 # dimensions of our images.
-img_width, img_height = 150, 150
+img_width, img_height = 224, 224
 
-train_data_dir = '/imatge/aromero/work/image-classification/dogs-vs-cats-dataset-reduced/train'
-validation_data_dir = '/imatge/aromero/work/image-classification/dogs-vs-cats-dataset-reduced/test'
-nb_train_samples = 2000
-nb_validation_samples = 800
-nb_epoch = 20
-
+train_data_dir = '/imatge/aromero/work/image-classification/isbi-dataset/train'
+validation_data_dir = '/imatge/aromero/work/image-classification/isbi-dataset/test'
+nb_train_samples = 896
+nb_validation_samples = 312
+nb_epoch = 50
 
 def save_bottlebeck_features():
     datagen = ImageDataGenerator(rescale=1./255)
@@ -115,11 +116,40 @@ def train_top_model():
 
     model.compile(optimizer='rmsprop', loss='binary_crossentropy', metrics=['accuracy'])
 
-    model.fit(train_data, train_labels,
-              nb_epoch=nb_epoch, batch_size=32,
-              validation_data=(validation_data, validation_labels))
+    print('-'*30)
+    print('Fitting top model...')
+    print('-'*30)
+    history = model.fit(train_data, train_labels,
+                nb_epoch=nb_epoch, batch_size=32,
+                validation_data=(validation_data, validation_labels))
+
     model.save_weights(top_model_weights_path)
 
+    print('-'*30)
+    print('Model Evaluation...')
+    print('-'*30)
+    score = model.evaluate(validation_data, validation_labels, batch_size=32)
+    print('Test Loss:', score[0])
+    print('Test Accuracy:', score[1])
+
+    # list all data in history
+    print(history.history.keys())
+    # summarize history for accuracy
+    plt.plot(history.history['acc'])
+    plt.plot(history.history['val_acc'])
+    plt.title('model accuracy')
+    plt.ylabel('accuracy')
+    plt.xlabel('epoch')
+    plt.legend(['train', 'test'], loc='upper left')
+    plt.show()
+    # summarize history for loss
+    plt.plot(history.history['loss'])
+    plt.plot(history.history['val_loss'])
+    plt.title('model loss')
+    plt.ylabel('loss')
+    plt.xlabel('epoch')
+    plt.legend(['train', 'test'], loc='upper left')
+    plt.show()
 
 save_bottlebeck_features()
 train_top_model()

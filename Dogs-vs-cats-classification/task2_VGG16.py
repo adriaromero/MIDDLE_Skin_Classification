@@ -11,16 +11,16 @@ from keras import backend as K
 K.set_image_dim_ordering('th')
 
 # path to the model weights file.
-weights_path = '/imatge/aromero/work/image-classification/FAU_DL_imageClassification/weigths/vgg16_weights.h5'
-top_model_weights_path = '/imatge/aromero/work/image-classification/FAU_DL_imageClassification/weigths/weights-task1-5epochs-skin-dataset.h5'
+weights_path = '/imatge/aromero/work/image-classification/FAU_DL_imageClassification/weights/vgg16_weights.h5'
+top_model_weights_path = '/imatge/aromero/work/image-classification/FAU_DL_imageClassification/weights/task1_dogs_vs_cats_weights_10epochs.h5'
 # dimensions of our images.
-img_width, img_height = 256, 256
+img_width, img_height = 150, 150
 
-train_data_dir = '/imatge/aromero/work/image-classification/isbi-dataset/train'
-validation_data_dir = '/imatge/aromero/work/image-classification/isbi-dataset/test'
-nb_train_samples = 896
-nb_validation_samples = 313
-nb_epoch = 10
+train_data_dir = '/imatge/aromero/work/image-classification/dogs-vs-cats-dataset-reduced/train'
+validation_data_dir = '/imatge/aromero/work/image-classification/dogs-vs-cats-dataset-reduced/test'
+nb_train_samples = 2000
+nb_validation_samples = 800
+nb_epoch = 20
 
 
 def save_bottlebeck_features():

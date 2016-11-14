@@ -17,6 +17,8 @@ from keras.models import Sequential
 from keras.layers.core import Dense, Dropout, Activation, Flatten
 from keras.layers.convolutional import Convolution2D, MaxPooling2D
 from keras.utils import np_utils
+from keras import backend as K
+K.set_image_dim_ordering('th')
 from skimage import io
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import *
@@ -30,7 +32,7 @@ np.random.seed(376483)
 batch_size = 128              # Size of image batch during training
 nb_classes = 2                # How many classes of objects do we have
 nb_epoch = 20                 # Adjust until stabilising
-img_rows, img_cols = 500, 500   # Input image dimensions
+img_rows, img_cols = 150, 150   # Input image dimensions
 nb_filters = 32               # Number of convolutional filters to use
 nb_pool = 2                   # Size of pooling area for max pooling
 nb_conv = 3                   # Convolution kernel size
@@ -52,10 +54,10 @@ def loadImageData(path, label):
    return X, y
 
 # Define the paths as globs for the training sets
-path_mm_train = '/Users/AdriaRomeroLopez/Desktop/data/malignant/train/*.jpeg'
-path_nz_train = '/Users/AdriaRomeroLopez/Desktop/data/benign/train/*.jpeg'
-path_mm_test = '/Users/AdriaRomeroLopez/Desktop/data/malignant/test/*.jpeg'
-path_nz_test = '/Users/AdriaRomeroLopez/Desktop/data/benign/test/*.jpeg'
+path_mm_train = '/imatge/aromero/work/image-classification/isbi-dataset/train/malignant/*.jpg'
+path_nz_train = '/imatge/aromero/work/image-classification/isbi-dataset/train/benign/*.jpg'
+path_mm_test = '/imatge/aromero/work/image-classification/isbi-dataset/test/malignant/*.jpg'
+path_nz_test = '/imatge/aromero/work/image-classification/isbi-dataset/test/benign/*.jpg'
 
 # Fetch the data and format it into Theano compatible matrices using the helper function above.
 X_nz_train, y_nz_train = loadImageData(path_nz_train, 0)    # Train Benign
