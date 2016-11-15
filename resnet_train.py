@@ -1,36 +1,22 @@
 import os
-import time
-from keras import backend as K
-K.set_image_dim_ordering('th')
 from keras.models import Model
-from keras.layers import (
-    Input,
-    Activation,
-    merge,
-    Dense,
-    Flatten
-)
-from keras.layers.convolutional import (
-    Convolution2D,
-    MaxPooling2D,
-    AveragePooling2D
-)
+from keras.layers import Input, Activation, merge, Dense, Flatten
+from keras.layers.convolutional import Convolution2D, MaxPooling2D, AveragePooling2D
 from keras.layers.normalization import BatchNormalization
 from keras.preprocessing.image import ImageDataGenerator
 from keras.utils.visualize_util import plot
-
+from keras import backend as K
+K.set_image_dim_ordering('th')
 
 # Options
 SAVE_WEIGHTS = 1
 PRINT_MODEL = 1
 
-time_elapsed = 0
-
 # dimensions of our images.
 img_width, img_height = 224, 224
 
 # Paths to set
-model_name = "resnet_train_v1"
+model_name = "resnet_train"
 model_path = "models_trained/" +model_name+"/"
 weights_path = "models_trained/"+model_name+"/weights/"
 train_data_dir = '/imatge/aromero/work/image-classification/isbi-dataset/train'
@@ -40,7 +26,7 @@ validation_data_dir = '/imatge/aromero/work/image-classification/isbi-dataset/te
 nb_train_samples = 896
 nb_validation_samples = 312
 batch_size = 32
-nb_epoch = 15
+nb_epoch = 50
 
 # Create directories for the models
 if not os.path.exists(model_path):
@@ -157,7 +143,7 @@ class ResNetBuilder(object):
         nb_filters = 64
         for i, r in enumerate(repetitions):
             block = _residual_block(block_fn, nb_filters=nb_filters, repetitions=r, is_first_layer=i == 0)(block)
-            nb_filters *= 2
+            nb_filters *= 2 # nb_filters=128
 
         # Classifier block
         pool2 = AveragePooling2D(pool_size=(block._keras_shape[2], block._keras_shape[3]), strides=(1, 1))(block)
@@ -189,14 +175,14 @@ class ResNetBuilder(object):
 
 
 def main():
-    model = ResNetBuilder.build_resnet_18((3, 224, 224), 2)
-    model.compile(loss="categorical_crossentropy", optimizer="sgd")
+    model = ResNetBuilder.build_resnet_18(input_shape=(3, img_width, img_height), num_outputs=1)
+    model.compile(loss="binary_crossentropy", optimizer="rmsprop", metrics=['accuracy'])
     model.summary()
     if(PRINT_MODEL):
         print('-'*30)
         print('Printing model...')
         print('-'*30)
-        plot(model, to_file='task1_skin_model.png')
+        plot(model, to_file='resnet_model.png')
 
     # this is the augmentation configuration we will use for training
     train_datagen = ImageDataGenerator(
@@ -238,7 +224,6 @@ def main():
     print('-'*30)
     for epoch in range(1,nb_epoch+1):
 
-        t0 = time.time()
         print ("Number of epoch: " +str(epoch)+"/"+str(nb_epoch))
 
         scores = model.fit_generator(
@@ -247,8 +232,6 @@ def main():
                     nb_epoch=1,
                     validation_data=validation_generator,
                     nb_val_samples=nb_validation_samples)
-        time_elapsed = time_elapsed + time.time() - t0
-        print ("Time Elapsed: " +str(time_elapsed))
 
         if(SAVE_WEIGHTS):
             print('-'*30)
@@ -280,10 +263,6 @@ def main():
     f_test.close()
     f_scores.close()
 
-    # Save time elapsed
-    f = open(model_path+model_name+"_time_elapsed.txt", 'w')
-    f.write(str(time_elapsed))
-    f.close()
 
 if __name__ == '__main__':
     main()
