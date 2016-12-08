@@ -23,14 +23,14 @@ model_path = "models_trained/" +model_name+"/"
 weights_path = "models_trained/"+model_name+"/weights/"
 train_data_dir = '/imatge/aromero/work/image-classification/isbi-dataset/train'
 validation_data_dir = '/imatge/aromero/work/image-classification/isbi-dataset/test'
-saved_weights_path = '/imatge/aromero/work/image-classification/FAU_DL_imageClassification/weights/vgg16_weight
-top_model_weights_path = '/imatge/aromero/work/image-classification/FAU_DL_imageClassification/weights/method1_
+saved_weights_path = '/imatge/aromero/work/image-classification/FAU_DL_imageClassification/weights/vgg16_weights.h5'
+top_model_weights_path = '/imatge/aromero/work/image-classification/FAU_DL_imageClassification/weights/method1_skin_weights_20epochs.h5'
 
 # dimensions of our images.
 img_width, img_height = 512, 384
 
 # Network Parameters
-nb_train_samples = 896
+nb_train_samples = 900
 nb_validation_samples = 378
 batch_size = 32
 nb_epoch = 20
@@ -98,7 +98,7 @@ def save_bottlebeck_features():
     # (trained on ImageNet, won the ILSVRC competition in 2014)
     # note: when there is a complete match between your model definition
     # and your weight savefile, you can simply call model.load_weights(filename)
-    assert os.path.exists(saved_weights_path), 'Model weights not found (see "saved_weights_path" variable in s$
+    assert os.path.exists(saved_weights_path), 'Model weights not found (see "weights_path" variable in script).'
     f = h5py.File(saved_weights_path)
     for k in range(f.attrs['nb_layers']):
         if k >= len(model.layers):
@@ -165,9 +165,14 @@ def train_top_model():
         score = model.fit(train_data, train_labels,
                     nb_epoch=1, batch_size=batch_size,
                     validation_data=(validation_data, validation_labels))
+
         score_train = model.evaluate(train_data, train_labels,  verbose=0)
         f_train.write(str(score_train)+"\n")
-        f_scores.write(str(score_train[0])+","+str(score_train[1])+","+str(score_test[0])+","+str(score_test[1]$
+
+        score_test = model.evaluate(validation_data, validation_labels,  verbose=0)
+        f_test.write(str(score_test)+"\n")
+
+        f_scores.write(str(score_train[0])+","+str(score_train[1])+","+str(score_test[0])+","+str(score_test[1])+"\n")
 
     print('-'*30)
     print('Saving weights...')
