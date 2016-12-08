@@ -1,12 +1,16 @@
-'''Task 1: training a small network from scratch'''
+'''method 1: training a small network from scratch'''
 import os
 import time
 import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib
+import random
 from keras.preprocessing.image import ImageDataGenerator
 from keras.models import Sequential
-from keras.layers import Convolution2D, MaxPooling2D
+from keras.layers import Convolution2D, MaxPooling2D, BatchNormalization
 from keras.layers import Activation, Dropout, Flatten, Dense
 from keras.utils.visualize_util import plot
+from keras.utils import np_utils
 from keras import backend as K
 K.set_image_dim_ordering('th')
 
@@ -15,12 +19,14 @@ SAVE_WEIGHTS = 1
 PRINT_MODEL = 0
 
 time_elapsed = 0
+random.seed(333)
 
 # dimensions of our images.
-img_width, img_height = 224, 224
+#img_width, img_height = 224, 224
+img_width, img_height = 512, 384
 
 # Paths to set
-model_name = "task1_VGG16_v1"
+model_name = "method1_VGG16"
 model_path = "models_trained/" +model_name+"/"
 weights_path = "models_trained/"+model_name+"/weights/"
 train_data_dir = '/imatge/aromero/work/image-classification/isbi-dataset/train'
@@ -28,14 +34,15 @@ validation_data_dir = '/imatge/aromero/work/image-classification/isbi-dataset/te
 
 # Network Parameters
 nb_train_samples = 896
-nb_validation_samples = 312
-batch_size = 32
-nb_epoch = 15
+nb_validation_samples = 378
+batch_size = 16
+nb_epoch = 20
+dropout = 0.8
 
 # Create directories for the models
 if not os.path.exists(model_path):
-	os.makedirs(model_path)
-	os.makedirs(weights_path)
+        os.makedirs(model_path)
+        os.makedirs(weights_path)
 
 # Initialize result files
 f_train = open(model_path+model_name+"_scores_training.txt", 'w')
@@ -45,6 +52,7 @@ f_scores = open(model_path+model_name+"_scores.txt", 'w')
 print('-'*30)
 print('Defining VGG16 architecture...')
 print('-'*30)
+
 model = Sequential()
 model.add(Convolution2D(32, 3, 3, input_shape=(3, img_width, img_height)))
 model.add(Activation('relu'))
@@ -61,7 +69,7 @@ model.add(MaxPooling2D(pool_size=(2, 2)))
 model.add(Flatten())
 model.add(Dense(64))
 model.add(Activation('relu'))
-model.add(Dropout(0.5))
+model.add(Dropout(dropout))
 model.add(Dense(1))
 model.add(Activation('sigmoid'))
 
@@ -71,8 +79,7 @@ if(PRINT_MODEL):
     print('-'*30)
     print('Printing model...')
     print('-'*30)
-    plot(model, to_file='task1_skin_model.png')
-
+    plot(model, to_file='method1_VGG16_model.png')
 
 model.compile(loss='binary_crossentropy',
               optimizer='rmsprop',
@@ -81,7 +88,7 @@ model.compile(loss='binary_crossentropy',
 # this is the augmentation configuration we will use for training
 train_datagen = ImageDataGenerator(
                     rescale=1./255,
-                    shear_range=0.2,
+                    shear_range=0,
                     rotation_range=40, # randomly rotate images in the range (degrees, 0 to 180)
                     width_shift_range=0.2, # randomly shift images horizontally (fraction of total width)
                     height_shift_range=0.2, # randomly shift images vertically (fraction of total height)
@@ -103,7 +110,6 @@ train_generator = train_datagen.flow_from_directory(
         target_size=(img_width, img_height),
         batch_size=batch_size,
         class_mode='binary')
-
 print('-'*30)
 print('Creating test batches...')
 print('-'*30)
@@ -130,20 +136,19 @@ for epoch in range(1,nb_epoch+1):
     time_elapsed = time_elapsed + time.time() - t0
     print ("Time Elapsed: " +str(time_elapsed))
 
-    if(SAVE_WEIGHTS):
-        print('-'*30)
-        print('Saving weights...')
-        print('-'*30)
-        model.save_weights(weights_path+model_name+"_weights_epoch"+str(epoch)+".h5")
-        print("Saved model to disk in: "+weights_path+model_name+"_weights_epoch"+str(epoch)+".h5")
-
-    score_train = model.evaluate_generator(generator=train_generator, val_samples=nb_train_samples, max_q_size=1)
+    score_train = model.evaluate_generator(generator=train_generator, val_samples=nb_train_samples, max_q_size=$
     f_train.write(str(score_train)+"\n")
 
-    score_test = model.evaluate_generator(generator=validation_generator, val_samples=nb_validation_samples, max_q_size=1)
+    score_test = model.evaluate_generator(generator=validation_generator, val_samples=nb_validation_samples, ma$
     f_test.write(str(score_test)+"\n")
 
-    f_scores.write(str(score_train[0])+","+str(score_train[1])+","+str(score_test[0])+","+str(score_test[1])+"\n")
+    f_scores.write(str(score_train[0])+","+str(score_train[1])+","+str(score_test[0])+","+str(score_test[1])+"\$
+
+if(SAVE_WEIGHTS):
+    print('-'*30)
+    print('Saving weights...')
+    print('-'*30)
+    model.save_weights(weights_path+model_name+"_weights.h5")
 
 print('-'*30)
 print('Model evaluation...')
@@ -152,7 +157,7 @@ score_train = model.evaluate_generator(generator=train_generator, val_samples=nb
 print('Train Loss:', score_train[0])
 print('Train Accuracy:', score_train[1])
 
-score_test = model.evaluate_generator(generator=validation_generator, val_samples=nb_validation_samples, max_q_size=1)
+score_test = model.evaluate_generator(generator=validation_generator, val_samples=nb_validation_samples, max_q_$
 print('Test Loss:', score_test[0])
 print('Test Accuracy:', score_test[1])
 
