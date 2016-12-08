@@ -30,15 +30,15 @@ top_model_weights_path = '/imatge/aromero/work/image-classification/FAU_DL_image
 img_width, img_height = 512, 384
 
 # Network Parameters
-nb_train_samples = 900
+nb_train_samples = 896
 nb_validation_samples = 378
 batch_size = 32
 nb_epoch = 20
 
 # Create directories for the models
 if not os.path.exists(model_path):
-        os.makedirs(model_path)
-        os.makedirs(weights_path)
+	os.makedirs(model_path)
+	os.makedirs(weights_path)
 
 # Initialize result files
 f_train = open(model_path+model_name+"_scores_training.txt", 'w')
@@ -47,14 +47,13 @@ f_scores = open(model_path+model_name+"_scores.txt", 'w')
 
 def save_bottlebeck_features():
     datagen = ImageDataGenerator(rescale=1./255,
-                                shear_range=0,
-                                rotation_range=40, # randomly rotate images in $
-                                width_shift_range=0.2, # randomly shift images $
-                                height_shift_range=0.2, # randomly shift images$
-                                zoom_range=0.2,
-                                horizontal_flip=True, # randomly flip images
-                                vertical_flip=False)
-
+								shear_range=0,
+								rotation_range=40, # randomly rotate images in the range (degrees, 0 to 180)
+								width_shift_range=0.2, # randomly shift images horizontally (fraction of total width)
+								height_shift_range=0.2, # randomly shift images vertically (fraction of total height)
+								zoom_range=0.2,
+								horizontal_flip=True, # randomly flip images
+								vertical_flip=False)
     # build the VGG16 network
     model = Sequential()
     model.add(ZeroPadding2D((1, 1), input_shape=(3, img_width, img_height)))
@@ -98,7 +97,7 @@ def save_bottlebeck_features():
     # (trained on ImageNet, won the ILSVRC competition in 2014)
     # note: when there is a complete match between your model definition
     # and your weight savefile, you can simply call model.load_weights(filename)
-    assert os.path.exists(saved_weights_path), 'Model weights not found (see "weights_path" variable in script).'
+    assert os.path.exists(saved_weights_path), 'Model weights not found (see "saved_weights_path" variable in script).'
     f = h5py.File(saved_weights_path)
     for k in range(f.attrs['nb_layers']):
         if k >= len(model.layers):
@@ -127,6 +126,7 @@ def save_bottlebeck_features():
             shuffle=False)
     bottleneck_features_validation = model.predict_generator(generator, nb_validation_samples)
     np.save(open('bottleneck_features_validation.npy', 'w'), bottleneck_features_validation)
+
 
 def train_top_model():
     print('-'*30)
@@ -165,7 +165,6 @@ def train_top_model():
         score = model.fit(train_data, train_labels,
                     nb_epoch=1, batch_size=batch_size,
                     validation_data=(validation_data, validation_labels))
-
         score_train = model.evaluate(train_data, train_labels,  verbose=0)
         f_train.write(str(score_train)+"\n")
 
@@ -194,7 +193,7 @@ def train_top_model():
     f_test.close()
     f_scores.close()
 
-        #generate_results(validation_labels, y_score)
+	#generate_results(validation_labels, y_score)
 
 save_bottlebeck_features()
 train_top_model()

@@ -42,8 +42,8 @@ print('Freezing: '+str(freeze)+' layers')
 
 # Create directories for the models
 if not os.path.exists(model_path):
-        os.makedirs(model_path)
-        os.makedirs(weights_path)
+	os.makedirs(model_path)
+	os.makedirs(weights_path)
 
 # Initialize result files
 f_train = open(model_path+model_name+"_scores_training.txt", 'w')
@@ -184,7 +184,7 @@ print('Fine-tunning the model...')
 print('-'*30)
 for epoch in range(1,nb_epoch+1):
 
- scores = model.fit_generator(
+    scores = model.fit_generator(
                 train_generator,
                 samples_per_epoch=nb_train_samples,
                 nb_epoch=1,
@@ -197,7 +197,7 @@ for epoch in range(1,nb_epoch+1):
     score_test = model.evaluate_generator(generator=validation_generator, val_samples=nb_validation_samples, max_q_size=1)
     f_test.write(str(score_test)+"\n")
 
-    f_scores.write(str(score_train[0])+","+str(score_train[1])+","+str(score_test[0])+","+str(score_test[1])+1])+"\n")
+    f_scores.write(str(score_train[0])+","+str(score_train[1])+","+str(score_test[0])+","+str(score_test[1])+"\n")
 
 if(SAVE_WEIGHTS):
     print('-'*30)
@@ -213,7 +213,7 @@ score_train = model.evaluate_generator(generator=train_generator, val_samples=nb
 print('Train Loss:', score_train[0])
 print('Train Accuracy:', score_train[1])
 
-score_test = model.evaluate_generator(generator=validation_generator, val_samples=nb_validation_samples, max_q_$
+score_test = model.evaluate_generator(generator=validation_generator, val_samples=nb_validation_samples, max_q_size=1)
 print('Test Loss:', score_test[0])
 print('Test Accuracy:', score_test[1])
 
