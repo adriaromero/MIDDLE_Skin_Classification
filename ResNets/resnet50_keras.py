@@ -22,19 +22,19 @@ PRINT_MODEL = 0
 model_name = "resnet50_keras"
 model_path = "models_trained/" +model_name+"/"
 weights_path = "models_trained/"+model_name+"/weights/"
-train_data_dir = '/imatge/aromero/work/image-classification/isbi-dataset/train'
-validation_data_dir = '/imatge/aromero/work/image-classification/isbi-dataset/test'
+train_data_dir = '/imatge/aromero/work/image-classification/isbi-classification-dataset/train'
+validation_data_dir = '/imatge/aromero/work/image-classification/isbi-classification-dataset/val'
 
-TH_WEIGHTS_PATH = 'https://github.com/fchollet/deep-learning-models/releases/download/v0.2/resnet50_weights_th_dim_ordering_th_kernels.h5'
+#TH_WEIGHTS_PATH = 'https://github.com/fchollet/deep-learning-models/releases/download/v0.2/resnet50_weights_th_dim_ordering_th_kernels.h5'
 
 # dimensions of our images.
 img_width, img_height = 224, 224
 
 # Network Parameters
-nb_train_samples = 896
+nb_train_samples = 900
 nb_validation_samples = 378
-batch_size = 32
-nb_epoch = 20
+batch_size = 16
+nb_epoch = 100
 
 # Create directories for the models
 if not os.path.exists(model_path):
@@ -152,14 +152,14 @@ x = Dense(1, activation='softmax', name='fc1')(x)
 model = Model(img_input, x)
 
 # load weights
-print('-'*30)
-print('Loading Imagenet weights...')
-print('-'*30)
-weights_path = get_file('resnet50_weights_th_dim_ordering_th_kernels.h5',
-                        TH_WEIGHTS_PATH,
-                        cache_subdir='models',
-                        md5_hash='1c1f8f5b0c8ee28fe9d950625a230e1c')
-model.load_weights(weights_path)
+#print('-'*30)
+#print('Loading Imagenet weights...')
+#print('-'*30)
+#weights_path = get_file('resnet50_weights_th_dim_ordering_th_kernels.h5',
+#                        TH_WEIGHTS_PATH,
+#                        cache_subdir='models',
+#                        md5_hash='1c1f8f5b0c8ee28fe9d950625a230e1c')
+#model.load_weights(weights_path)
 
 print('-'*30)
 print('Model summary...')
@@ -222,10 +222,10 @@ for epoch in range(1,nb_epoch+1):
                     validation_data=validation_generator,
                     nb_val_samples=nb_validation_samples)
 
-    score_train = model.evaluate_generator(generator=train_generator, val_samples=nb_train_samples, max_q_size=1)
+    score_train = model.evaluate_generator(generator=train_generator, val_samples=nb_train_samples, max_q_size=10)
     f_train.write(str(score_train)+"\n")
 
-    score_test = model.evaluate_generator(generator=validation_generator, val_samples=nb_validation_samples, max_q_size=1)
+    score_test = model.evaluate_generator(generator=validation_generator, val_samples=nb_validation_samples, max_q_size=10)
     f_test.write(str(score_test)+"\n")
 
     f_scores.write(str(score_train[0])+","+str(score_train[1])+","+str(score_test[0])+","+str(score_test[1])+"\n")
@@ -239,11 +239,11 @@ if(SAVE_WEIGHTS):
 print('-'*30)
 print('Model evaluation...')
 print('-'*30)
-score_train = model.evaluate_generator(generator=train_generator, val_samples=nb_train_samples, max_q_size=1)
+score_train = model.evaluate_generator(generator=train_generator, val_samples=nb_train_samples, max_q_size=10)
 print('Train Loss:', score_train[0])
 print('Train Accuracy:', score_train[1])
 
-score_test = model.evaluate_generator(generator=validation_generator, val_samples=nb_validation_samples, max_q_size=1)
+score_test = model.evaluate_generator(generator=validation_generator, val_samples=nb_validation_samples, max_q_size=10)
 print('Test Loss:', score_test[0])
 print('Test Accuracy:', score_test[1])
 

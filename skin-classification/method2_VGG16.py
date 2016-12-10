@@ -14,26 +14,26 @@ K.set_image_dim_ordering('th')
 random.seed(333)
 
 # Options
-SAVE_WEIGHTS = 1
+SAVE_WEIGHTS = 0
 PRINT_MODEL = 0
 
 # Paths to set
 model_name = "method2_VGG16"
 model_path = "models_trained/" +model_name+"/"
 weights_path = "models_trained/"+model_name+"/weights/"
-train_data_dir = '/imatge/aromero/work/image-classification/isbi-dataset/train'
-validation_data_dir = '/imatge/aromero/work/image-classification/isbi-dataset/test'
-saved_weights_path = '/imatge/aromero/work/image-classification/FAU_DL_imageClassification/weights/vgg16_weights.h5'
-top_model_weights_path = '/imatge/aromero/work/image-classification/FAU_DL_imageClassification/weights/method1_skin_weights_20epochs.h5'
+train_data_dir = '/imatge/aromero/work/image-classification/isbi-classification-dataset/train'
+validation_data_dir = '/imatge/aromero/work/image-classification/isbi-classification-dataset/val'
+saved_weights_path = '/imatge/aromero/work/image-classification/weights/vgg16_weights.h5'
+top_model_weights_path = '/imatge/aromero/work/image-classification/MIDDLE_Skin_Classification/skin-classification/models_trained/method1_VGG16/weights/method1_VGG16_weights.h5'
 
 # dimensions of our images.
-img_width, img_height = 512, 384
+img_width, img_height = 224, 224
 
 # Network Parameters
-nb_train_samples = 896
+nb_train_samples = 900
 nb_validation_samples = 378
 batch_size = 32
-nb_epoch = 20
+nb_epoch = 50
 
 # Create directories for the models
 if not os.path.exists(model_path):
@@ -127,6 +127,9 @@ def save_bottlebeck_features():
     bottleneck_features_validation = model.predict_generator(generator, nb_validation_samples)
     np.save(open('bottleneck_features_validation.npy', 'w'), bottleneck_features_validation)
 
+def top_1_error(y_true, y_pred):
+	top_1 = K.in_top_k(y_pred, K.argmax(y_true, axis=-1), 1)
+	return top_1
 
 def train_top_model():
     print('-'*30)
@@ -155,7 +158,7 @@ def train_top_model():
         print('-'*30)
         plot(model, to_file='method2_VGG16_model.png')
 
-    model.compile(optimizer='rmsprop', loss='binary_crossentropy', metrics=['accuracy'])
+    model.compile(optimizer='rmsprop', loss='binary_crossentropy', metrics=['accuracy', top_1_error])
 
     print('-'*30)
     print('Training model...')
@@ -188,6 +191,16 @@ def train_top_model():
     score = model.evaluate(validation_data, validation_labels)
     print('Test Loss:', score[0])
     print('Test Accuracy:', score[1])
+
+    print('-'*30)
+    print('Computing predictions...')
+    print('-'*30)
+    validation_pred = model.predict(validation_data, batch_size=batch_size, verbose=0)
+
+    # Compute top1 (k=1) error
+	#k = 1
+    #top_1 = K.mean(K.in_top_k(validation_pred, K.argmax(validation_labels, axis=-1), k))
+	#print('Top 1 Error:', top_1)
 
     f_train.close()
     f_test.close()

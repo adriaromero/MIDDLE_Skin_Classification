@@ -22,21 +22,21 @@ time_elapsed = 0
 random.seed(333)
 
 # dimensions of our images.
-#img_width, img_height = 224, 224
-img_width, img_height = 512, 384
+img_width, img_height = 224, 224
+#img_width, img_height = 340, 255
 
 # Paths to set
 model_name = "method1_VGG16"
 model_path = "models_trained/" +model_name+"/"
 weights_path = "models_trained/"+model_name+"/weights/"
-train_data_dir = '/imatge/aromero/work/image-classification/isbi-dataset/train'
-validation_data_dir = '/imatge/aromero/work/image-classification/isbi-dataset/test'
+train_data_dir = '/imatge/aromero/work/image-classification/isbi-classification-dataset/train'
+validation_data_dir = '/imatge/aromero/work/image-classification/isbi-classification-dataset/val'
 
 # Network Parameters
-nb_train_samples = 896
+nb_train_samples = 900
 nb_validation_samples = 378
 batch_size = 16
-nb_epoch = 20
+nb_epoch = 5
 dropout = 0.8
 
 # Create directories for the models
@@ -45,9 +45,9 @@ if not os.path.exists(model_path):
 	os.makedirs(weights_path)
 
 # Initialize result files
-f_train = open(model_path+model_name+"_scores_training.txt", 'w')
-f_test = open(model_path+model_name+"_scores_test.txt", 'w')
-f_scores = open(model_path+model_name+"_scores.txt", 'w')
+f_train = open(model_path+model_name+"_train.txt", 'w')
+f_test = open(model_path+model_name+"_test.txt", 'w')
+f_scores = open(model_path+model_name+"_model.txt", 'w')
 
 print('-'*30)
 print('Defining VGG16 architecture...')
@@ -137,38 +137,30 @@ for epoch in range(1,nb_epoch+1):
     time_elapsed = time_elapsed + time.time() - t0
     print ("Time Elapsed: " +str(time_elapsed))
 
-    score_train = model.evaluate_generator(generator=train_generator, val_samples=nb_train_samples, max_q_size=1)
+    score_train = model.evaluate_generator(generator=train_generator, val_samples=nb_train_samples, max_q_size=10)
     f_train.write(str(score_train)+"\n")
 
-    score_test = model.evaluate_generator(generator=validation_generator, val_samples=nb_validation_samples, max_q_size=1)
+    score_test = model.evaluate_generator(generator=validation_generator, val_samples=nb_validation_samples, max_q_size=10)
     f_test.write(str(score_test)+"\n")
-
-    f_scores.write(str(score_train[0])+","+str(score_train[1])+","+str(score_test[0])+","+str(score_test[1])+"\n")
 
 if(SAVE_WEIGHTS):
 	print('-'*30)
 	print('Saving weights...')
 	print('-'*30)
-	model.save_weights(weights_path+model_name+"_weights_"+str(nb_epoch)+"epochs.h5")
+	model.save_weights(weights_path+model_name+"_weights.h5")
 
 print('-'*30)
 print('Model evaluation...')
 print('-'*30)
-score_train = model.evaluate_generator(generator=train_generator, val_samples=nb_train_samples, max_q_size=1)
+score_train = model.evaluate_generator(generator=train_generator, val_samples=nb_train_samples, max_q_size=10)
 print('Train Loss:', score_train[0])
 print('Train Accuracy:', score_train[1])
 
-score_test = model.evaluate_generator(generator=validation_generator, val_samples=nb_validation_samples, max_q_size=1)
+score_test = model.evaluate_generator(generator=validation_generator, val_samples=nb_validation_samples, max_q_size=10)
 print('Test Loss:', score_test[0])
 print('Test Accuracy:', score_test[1])
 
-# Editing output files (delate brackets)
-f_train = f_train.replace("[", "")
-f_train = f_train.replace("]", "")
-f_test = f_test.replace("[", "")
-f_test = f_test.replace("]", "")
-f_scores = f_scores.replace("[", "")
-f_scores = f_scores.replace("]", "")
+f_scores.write(str(score_train[0])+","+str(score_train[1])+","+str(score_test[0])+","+str(score_test[1])+"\n")
 
 f_train.close()
 f_test.close()

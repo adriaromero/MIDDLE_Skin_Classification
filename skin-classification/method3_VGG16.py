@@ -24,15 +24,15 @@ model_name = "method3_VGG16"
 model_path = "models_trained/" +model_name+"/"
 saving_weights_path = "models_trained/"+model_name+"/weights/"
 weights_path = '/imatge/aromero/work/image-classification/weights/vgg16_weights.h5'
-top_model_weights_path = '/imatge/aromero/work/image-classification/MIDDLE_Skin_Classification/models_trained/method1_VGG16/weights/method1_skin_weights_20epochs.h5'
-train_data_dir = '/imatge/aromero/work/image-classification/isbi-dataset/train'
-validation_data_dir = '/imatge/aromero/work/image-classification/isbi-dataset/test'
+top_model_weights_path = '/imatge/aromero/work/image-classification/MIDDLE_Skin_Classification/skin-classification/models_trained/method1_VGG16/weights/method1_VGG16_weights.h5'
+train_data_dir = '/imatge/aromero/work/image-classification/isbi-classification-dataset/train'
+validation_data_dir = '/imatge/aromero/work/image-classification/isbi-classification-dataset/test'
 
 # Network Parameters
-img_width, img_height = 512, 384   # Dimensions of our images
-nb_train_samples = 896
+img_width, img_height = 224, 224
+nb_train_samples = 900
 nb_validation_samples = 378
-nb_epoch = 30
+nb_epoch = 15
 batch_size = 32
 dropout = 0.8
 freeze = 18
