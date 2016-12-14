@@ -164,12 +164,11 @@ validation_generator = test_datagen.flow_from_directory(
 print('-'*30)
 print('Fine-tunning the model...')
 print('-'*30)
-scores = model.fit_generator(
-	              	train_generator,
-					samples_per_epoch=nb_train_samples,
-					nb_epoch=nb_epoch,
-					validation_data=validation_generator,
-					nb_val_samples=nb_validation_samples)
+scores = model.fit_generator( train_generator,
+		samples_per_epoch=nb_train_samples,
+		nb_epoch=nb_epoch,
+		validation_data=validation_generator,
+		nb_val_samples=nb_validation_samples)
 
 # Save performance on every epoch
 f_hist.write(str(scores.history))
