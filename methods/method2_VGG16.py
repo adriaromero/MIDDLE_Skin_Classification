@@ -2,7 +2,7 @@
 import os
 import h5py
 import numpy as np
-import random
+np.random.seed(2016)  # for reproducibility
 from keras.preprocessing.image import ImageDataGenerator
 from keras.models import Sequential
 from keras.layers import Convolution2D, MaxPooling2D, ZeroPadding2D
@@ -11,7 +11,6 @@ from keras.utils.visualize_util import plot
 import matplotlib.pyplot as plt
 from keras import backend as K
 K.set_image_dim_ordering('th')
-random.seed(333)
 
 # Options
 SAVE_WEIGHTS = 0
@@ -31,9 +30,14 @@ img_width, img_height = 224, 224
 
 # Network Parameters
 nb_train_samples = 900
+nb_train_samples_benign = 727
+nb_train_samples_malignant = 173
 nb_validation_samples = 378
+nb_validation_samples_benign = 303
+nb_validation_samples_maligant = 75
+
 batch_size = 32
-nb_epoch = 50
+nb_epoch = 100
 
 # Create directories for the models
 if not os.path.exists(model_path):
@@ -41,9 +45,8 @@ if not os.path.exists(model_path):
 	os.makedirs(weights_path)
 
 # Initialize result files
-f_train = open(model_path+model_name+"_scores_training.txt", 'w')
-f_test = open(model_path+model_name+"_scores_test.txt", 'w')
-f_scores = open(model_path+model_name+"_scores.txt", 'w')
+f_model = open(model_path+model_name+"_model.txt", 'w')
+f_hist = open(model_path+model_name+"_history.txt", 'w')
 
 def save_bottlebeck_features():
     datagen = ImageDataGenerator(rescale=1./255,
@@ -127,19 +130,17 @@ def save_bottlebeck_features():
     bottleneck_features_validation = model.predict_generator(generator, nb_validation_samples)
     np.save(open('bottleneck_features_validation.npy', 'w'), bottleneck_features_validation)
 
-def top_1_error(y_true, y_pred):
-	top_1 = K.in_top_k(y_pred, K.argmax(y_true, axis=-1), 1)
-	return top_1
-
 def train_top_model():
     print('-'*30)
     print('Loading bottleneck_features_train values...')
     print('-'*30)
     train_data = np.load(open('bottleneck_features_train.npy'))
-    train_labels = np.array([0] * (nb_train_samples / 2) + [1] * (nb_train_samples / 2))
+    #train_labels = np.array([0] * nb_train_samples_benign + [1] * nb_train_samples_malignant)
+    train_labels = np.array([0] * nb_train_samples_malignant + [1] * nb_train_samples_benign)
 
     validation_data = np.load(open('bottleneck_features_validation.npy'))
-    validation_labels = np.array([0] * (nb_validation_samples / 2) + [1] * (nb_validation_samples / 2))
+    #validation_labels = np.array([0] * nb_validation_samples_benign + [1] * nb_validation_samples_maligant)
+    validation_labels = np.array([0] * nb_validation_samples_maligant + [1] * nb_validation_samples_benign)
 
     print('-'*30)
     print('Defining the top model architecture...')
@@ -158,23 +159,17 @@ def train_top_model():
         print('-'*30)
         plot(model, to_file='method2_VGG16_model.png')
 
-    model.compile(optimizer='rmsprop', loss='binary_crossentropy', metrics=['accuracy', top_1_error])
+    model.compile(optimizer='rmsprop', loss='binary_crossentropy', metrics=['accuracy'])
 
     print('-'*30)
     print('Training model...')
     print('-'*30)
-    for epoch in range(1,nb_epoch+1):
-
-        score = model.fit(train_data, train_labels,
-                    nb_epoch=1, batch_size=batch_size,
+    score = model.fit(train_data, train_labels,
+                    nb_epoch=nb_epoch, batch_size=batch_size,
                     validation_data=(validation_data, validation_labels))
-        score_train = model.evaluate(train_data, train_labels,  verbose=0)
-        f_train.write(str(score_train)+"\n")
 
-        score_test = model.evaluate(validation_data, validation_labels,  verbose=0)
-        f_test.write(str(score_test)+"\n")
-
-        f_scores.write(str(score_train[0])+","+str(score_train[1])+","+str(score_test[0])+","+str(score_test[1])+"\n")
+    # Save performance on every epoch
+    f_hist.write(str(score.history))
 
     print('-'*30)
     print('Saving weights...')
@@ -184,29 +179,29 @@ def train_top_model():
     print('-'*30)
     print('Model Evaluation...')
     print('-'*30)
-    score = model.evaluate(train_data, train_labels)
-    print('Train Loss:', score[0])
-    print('Train Accuracy:', score[1])
+    score_train = model.evaluate(train_data, train_labels)
+    print('Train Loss:', score_train[0])
+    print('Train Accuracy:', score_train[1])
 
-    score = model.evaluate(validation_data, validation_labels)
-    print('Test Loss:', score[0])
-    print('Test Accuracy:', score[1])
+    score_test = model.evaluate(validation_data, validation_labels)
+    print('Test Loss:', score_test[0])
+    print('Test Accuracy:', score_test[1])
 
-    print('-'*30)
-    print('Computing predictions...')
-    print('-'*30)
-    validation_pred = model.predict(validation_data, batch_size=batch_size, verbose=0)
+    f_model.write(str(score_train[0])+","+str(score_train[1])+","+str(score_test[0])+","+str(score_test[1])+"\n")
+
+    #print('-'*30)
+    #print('Computing predictions...')
+    #print('-'*30)
+    #validation_pred = model.predict(validation_data, batch_size=batch_size, verbose=0)
 
     # Compute top1 (k=1) error
 	#k = 1
     #top_1 = K.mean(K.in_top_k(validation_pred, K.argmax(validation_labels, axis=-1), k))
 	#print('Top 1 Error:', top_1)
 
-    f_train.close()
-    f_test.close()
-    f_scores.close()
-
-	#generate_results(validation_labels, y_score)
+    #generate_results(validation_labels, y_score)
+    f_model.close()
+    f_hist.close()
 
 save_bottlebeck_features()
 train_top_model()

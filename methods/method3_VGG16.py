@@ -1,7 +1,7 @@
 import os
 import h5py
 import numpy as np
-import random
+np.random.seed(2016)  # for reproducibility
 from keras.preprocessing.image import ImageDataGenerator
 from keras import optimizers
 from keras.models import Sequential
@@ -12,29 +12,27 @@ from keras import backend as K
 K.set_image_dim_ordering('th')
 
 # Options
-SAVE_WEIGHTS = 0
+SAVE_WEIGHTS = 1
 PRINT_MODEL = 0
-
-time_elapsed = 0
-random.seed(333)
 
 # Paths to set
 model_name = "method3_VGG16"
 model_path = "models_trained/" +model_name+"/"
 saving_weights_path = "models_trained/"+model_name+"/weights/"
 weights_path = '/imatge/aromero/work/image-classification/weights/vgg16_weights.h5'
-top_model_weights_path = '/imatge/aromero/work/image-classification/MIDDLE_Skin_Classification/dogs_cats/models_trained/method1_VGG16/weights/method1_skin_weights.h5'
-train_data_dir = '/imatge/aromero/work/image-classification/dogs_cats_dataset/train'
-validation_data_dir = '/imatge/aromero/work/image-classification/dogs_cats_dataset/test'
+top_model_weights_path = '/imatge/aromero/work/image-classification/MIDDLE_Skin_Classification/skin-classification/models_trained/method1_VGG16/weights/method1_VGG16_weights.h5'
+train_data_dir = '/imatge/aromero/work/image-classification/isbi-classification-dataset/train'
+validation_data_dir = '/imatge/aromero/work/image-classification/isbi-classification-dataset/val'
 
 # Network Parameters
-img_width, img_height = 150, 150
-nb_train_samples = 2000
-nb_validation_samples = 800
-nb_epoch = 50
+img_width, img_height = 224, 224
+
+nb_train_samples = 900
+nb_validation_samples = 378
+nb_epoch = 30
 batch_size = 32
 dropout = 0.5
-freeze = 18
+freeze = 25
 
 # Create directories for the models
 if not os.path.exists(model_path):
@@ -42,9 +40,8 @@ if not os.path.exists(model_path):
 	os.makedirs(weights_path)
 
 # Initialize result files
-f_train = open(model_path+model_name+"_scores_training.txt", 'w')
-f_test = open(model_path+model_name+"_scores_test.txt", 'w')
-f_scores = open(model_path+model_name+"_scores.txt", 'w')
+f_model = open(model_path+model_name+"_model.txt", 'w')
+f_hist = open(model_path+model_name+"_history.txt", 'w')
 
 # build the VGG16 network
 model = Sequential()
@@ -89,9 +86,6 @@ model.add(MaxPooling2D((2, 2), strides=(2, 2)))
 # (trained on ImageNet, won the ILSVRC competition in 2014)
 # note: when there is a complete match between your model definition
 # and your weight savefile, you can simply call model.load_weights(filename)
-print('-'*30)
-print('Loading weights...')
-print('-'*30)
 assert os.path.exists(weights_path), 'Model weights not found (see "weights_path" variable in script).'
 f = h5py.File(weights_path)
 for k in range(f.attrs['nb_layers']):
@@ -105,13 +99,10 @@ f.close()
 print('Model loaded.')
 
 # build a classifier model to put on top of the convolutional model
-print('-'*30)
-print('Building a classifier model on top of the ConvNet...')
-print('-'*30)
 top_model = Sequential()
 top_model.add(Flatten(input_shape=model.output_shape[1:]))
 top_model.add(Dense(256, activation='relu'))
-top_model.add(Dropout(dropout))
+top_model.add(Dropout(0.5))
 top_model.add(Dense(1, activation='sigmoid'))
 
 # note that it is necessary to start with a fully-trained
@@ -178,41 +169,35 @@ validation_generator = test_datagen.flow_from_directory(
 print('-'*30)
 print('Fine-tunning the model...')
 print('-'*30)
-for epoch in range(1,nb_epoch+1):
+scores = model.fit_generator(
+	              	train_generator,
+					samples_per_epoch=nb_train_samples,
+					nb_epoch=nb_epoch,
+					validation_data=validation_generator,
+					nb_val_samples=nb_validation_samples)
 
-    scores = model.fit_generator(
-                train_generator,
-                samples_per_epoch=nb_train_samples,
-                nb_epoch=1,
-                validation_data=validation_generator,
-                nb_val_samples=nb_validation_samples)
-
-    score_train = model.evaluate_generator(generator=train_generator, val_samples=nb_train_samples, max_q_size=1)
-    f_train.write(str(score_train)+"\n")
-
-    score_test = model.evaluate_generator(generator=validation_generator, val_samples=nb_validation_samples, max_q_size=1)
-    f_test.write(str(score_test)+"\n")
-
-    f_scores.write(str(score_train[0])+","+str(score_train[1])+","+str(score_test[0])+","+str(score_test[1])+"\n")
+# Save performance on every epoch
+f_hist.write(str(scores.history))
 
 if(SAVE_WEIGHTS):
     print('-'*30)
     print('Saving weights...')
     print('-'*30)
     model.save_weights(saving_weights_path+model_name+"_weights.h5")
-    print("Weights saved to disk in: "+saving_weights_path+model_name+"_weights.h5")
+    print("Saved model to disk in: "+saving_weights_path+model_name+"_weights.h5")
 
 print('-'*30)
 print('Model evaluation...')
 print('-'*30)
-score_train = model.evaluate_generator(generator=train_generator, val_samples=nb_train_samples, max_q_size=1)
+score_train = model.evaluate_generator(generator=train_generator, val_samples=nb_train_samples, max_q_size=10)
 print('Train Loss:', score_train[0])
 print('Train Accuracy:', score_train[1])
 
-score_test = model.evaluate_generator(generator=validation_generator, val_samples=nb_validation_samples, max_q_size=1)
+score_test = model.evaluate_generator(generator=validation_generator, val_samples=nb_validation_samples, max_q_size=10)
 print('Test Loss:', score_test[0])
 print('Test Accuracy:', score_test[1])
 
-f_train.close()
-f_test.close()
-f_scores.close()
+f_model.write(str(score_train[0])+","+str(score_train[1])+","+str(score_test[0])+","+str(score_test[1])+"\n")
+
+f_model.close()
+f_hist.close()
