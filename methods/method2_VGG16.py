@@ -27,9 +27,9 @@ img_width, img_height = 224, 224
 
 # Network Parameters
 nb_train_samples = 900				# Training samples
-nb_train_samples_benign = 727		# Testing samples
+nb_train_samples_benign = 727		# Benign Training samples
 nb_train_samples_malignant = 173	# Malignant Training samples
-nb_validation_samples = 378			# Malignant Training samples
+nb_validation_samples = 378			# Testing samples
 nb_validation_samples_benign = 303	# Benign Training samples
 nb_validation_samples_maligant = 75	# Malignant Testing samples
 batch_size = 32

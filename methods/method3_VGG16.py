@@ -26,7 +26,7 @@ validation_data_dir = '/imatge/aromero/work/image-classification/isbi-classifica
 # Network Parameters
 img_width, img_height = 224, 224
 nb_train_samples = 900				# Training samples
-nb_train_samples_benign = 727		# Testing samples
+nb_validation_samples = 378			# Testing samples
 nb_epoch = 30
 batch_size = 32
 dropout = 0.5
