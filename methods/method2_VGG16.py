@@ -8,9 +8,6 @@ from keras.models import Sequential
 from keras.layers import Convolution2D, MaxPooling2D, ZeroPadding2D
 from keras.layers import Activation, Dropout, Flatten, Dense
 from keras.utils.visualize_util import plot
-import matplotlib.pyplot as plt
-from keras import backend as K
-K.set_image_dim_ordering('th')
 
 # Options
 SAVE_WEIGHTS = 0
@@ -29,13 +26,12 @@ top_model_weights_path = '/imatge/aromero/work/image-classification/MIDDLE_Skin_
 img_width, img_height = 224, 224
 
 # Network Parameters
-nb_train_samples = 900
-nb_train_samples_benign = 727
-nb_train_samples_malignant = 173
-nb_validation_samples = 378
-nb_validation_samples_benign = 303
-nb_validation_samples_maligant = 75
-
+nb_train_samples = 900				# Training samples
+nb_train_samples_benign = 727		# Testing samples
+nb_train_samples_malignant = 173	# Malignant Training samples
+nb_validation_samples = 378			# Malignant Training samples
+nb_validation_samples_benign = 303	# Benign Training samples
+nb_validation_samples_maligant = 75	# Malignant Testing samples
 batch_size = 32
 nb_epoch = 100
 
@@ -96,10 +92,7 @@ def save_bottlebeck_features():
     model.add(Convolution2D(512, 3, 3, activation='relu', name='conv5_3'))
     model.add(MaxPooling2D((2, 2), strides=(2, 2)))
 
-    # load the weights of the VGG16 networks
-    # (trained on ImageNet, won the ILSVRC competition in 2014)
-    # note: when there is a complete match between your model definition
-    # and your weight savefile, you can simply call model.load_weights(filename)
+    # load the weights of the VGG16 networks (trained on ImageNet)
     assert os.path.exists(saved_weights_path), 'Model weights not found (see "saved_weights_path" variable in script).'
     f = h5py.File(saved_weights_path)
     for k in range(f.attrs['nb_layers']):
@@ -135,12 +128,10 @@ def train_top_model():
     print('Loading bottleneck_features_train values...')
     print('-'*30)
     train_data = np.load(open('bottleneck_features_train.npy'))
-    #train_labels = np.array([0] * nb_train_samples_benign + [1] * nb_train_samples_malignant)
-    train_labels = np.array([0] * nb_train_samples_malignant + [1] * nb_train_samples_benign)
+    train_labels = np.array([0] * nb_train_samples_benign + [1] * nb_train_samples_malignant)
 
     validation_data = np.load(open('bottleneck_features_validation.npy'))
-    #validation_labels = np.array([0] * nb_validation_samples_benign + [1] * nb_validation_samples_maligant)
-    validation_labels = np.array([0] * nb_validation_samples_maligant + [1] * nb_validation_samples_benign)
+    validation_labels = np.array([0] * nb_validation_samples_benign + [1] * nb_validation_samples_maligant)
 
     print('-'*30)
     print('Defining the top model architecture...')
@@ -189,17 +180,6 @@ def train_top_model():
 
     f_model.write(str(score_train[0])+","+str(score_train[1])+","+str(score_test[0])+","+str(score_test[1])+"\n")
 
-    #print('-'*30)
-    #print('Computing predictions...')
-    #print('-'*30)
-    #validation_pred = model.predict(validation_data, batch_size=batch_size, verbose=0)
-
-    # Compute top1 (k=1) error
-	#k = 1
-    #top_1 = K.mean(K.in_top_k(validation_pred, K.argmax(validation_labels, axis=-1), k))
-	#print('Top 1 Error:', top_1)
-
-    #generate_results(validation_labels, y_score)
     f_model.close()
     f_hist.close()
 

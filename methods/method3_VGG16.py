@@ -1,3 +1,4 @@
+'''Method 3: Fine-tunning last Conv Block of the model'''
 import os
 import h5py
 import numpy as np
@@ -8,8 +9,6 @@ from keras.models import Sequential
 from keras.layers import Convolution2D, MaxPooling2D, ZeroPadding2D
 from keras.layers import Activation, Dropout, Flatten, Dense
 from keras.utils.visualize_util import plot
-from keras import backend as K
-K.set_image_dim_ordering('th')
 
 # Options
 SAVE_WEIGHTS = 1
@@ -26,9 +25,8 @@ validation_data_dir = '/imatge/aromero/work/image-classification/isbi-classifica
 
 # Network Parameters
 img_width, img_height = 224, 224
-
-nb_train_samples = 900
-nb_validation_samples = 378
+nb_train_samples = 900				# Training samples
+nb_train_samples_benign = 727		# Testing samples
 nb_epoch = 30
 batch_size = 32
 dropout = 0.5
@@ -82,10 +80,7 @@ model.add(ZeroPadding2D((1, 1)))
 model.add(Convolution2D(512, 3, 3, activation='relu', name='conv5_3'))
 model.add(MaxPooling2D((2, 2), strides=(2, 2)))
 
-# load the weights of the VGG16 networks
-# (trained on ImageNet, won the ILSVRC competition in 2014)
-# note: when there is a complete match between your model definition
-# and your weight savefile, you can simply call model.load_weights(filename)
+# load the weights of the VGG16 networks (trained on ImageNet)
 assert os.path.exists(weights_path), 'Model weights not found (see "weights_path" variable in script).'
 f = h5py.File(weights_path)
 for k in range(f.attrs['nb_layers']):

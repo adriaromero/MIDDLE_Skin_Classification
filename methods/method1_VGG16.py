@@ -13,9 +13,6 @@ from keras.utils import np_utils
 SAVE_WEIGHTS = 1
 PRINT_MODEL = 0
 
-# dimensions of our images.
-img_width, img_height = 224, 224
-
 # Paths to set
 model_name = "method1_VGG16"
 model_path = "models_trained/" +model_name+"/"
@@ -24,12 +21,9 @@ train_data_dir = '/imatge/aromero/work/image-classification/isbi-classification-
 validation_data_dir = '/imatge/aromero/work/image-classification/isbi-classification-dataset/val'
 
 # Network Parameters
+img_width, img_height = 224, 224	# Image dimensions
 nb_train_samples = 900				# Training samples
 nb_train_samples_benign = 727		# Testing samples
-nb_train_samples_malignant = 173	# Malignant Training samples
-nb_validation_samples = 378			# Malignant Training samples
-nb_validation_samples_benign = 303	# Benign Training samples
-nb_validation_samples_maligant = 75	# Malignant Testing samples
 batch_size = 16
 nb_epoch = 10
 dropout = 0.5
