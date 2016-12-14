@@ -146,4 +146,5 @@ f_model.close()
 f_hist.close()
 
 # Predict test generator
-print model.predict_generator(test_generator, nb_validation_samples)
+y_pred = model.predict_generator(test_generator, nb_validation_samples)
+np.savetxt('y_pred.csv', y_pred)

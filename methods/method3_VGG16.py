@@ -127,7 +127,7 @@ for layer in model.layers[:freeze]:
 # and a very slow learning rate.
 model.compile(loss='binary_crossentropy',
               optimizer=optimizers.SGD(lr=1e-4, momentum=0.9),
-              metrics=['accuracy'])
+              metrics=['accuracy','precision', 'recall'])
 
 # prepare data augmentation configuration
 print('-'*30)
@@ -195,3 +195,7 @@ f_model.write(str(score_train[0])+","+str(score_train[1])+","+str(score_test[0])
 
 f_model.close()
 f_hist.close()
+
+# Predict test generator
+y_pred = model.predict_generator(test_generator, nb_validation_samples)
+np.savetxt('y_pred.csv', y_pred)
